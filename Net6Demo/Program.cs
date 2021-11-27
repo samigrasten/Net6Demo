@@ -18,4 +18,6 @@ app.UseEndpoints(endpoints =>
     endpoints.MapRazorPages();
 });
 
+app.MapGet("/", () => ".NET Conf Kuopio 2021");
+
 app.Run();
