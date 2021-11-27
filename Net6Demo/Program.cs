@@ -1,15 +1,3 @@
-
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using Net6Demo.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
