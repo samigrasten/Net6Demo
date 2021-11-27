@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Net6Demo.Models;
 using System;
@@ -24,7 +25,7 @@ app.UseEndpoints(endpoints =>
     endpoints.MapRazorPages();
 });
 
-app.MapGet("/", () => ".NET Conf Kuopio 2021");
+app.MapGet("/", (LinkGenerator linker) => $"Fetch all items from {linker.GetPathByName("items", values: null)}");
 
 var items = new List<ToDoItem>
 {
@@ -37,7 +38,8 @@ var items = new List<ToDoItem>
     }
 };
 
-app.MapGet("/items", async () => items);
+app.MapGet("/items", async () => items)
+    .WithName("items");
 
 app.MapPost("/items/", async ([FromBody] ToDoItem item, HttpResponse response) =>
 {
@@ -69,6 +71,7 @@ app.MapGet("/items/search/{filter}", async (SearchFilter filter) =>
 });
 
 app.MapMethods("/items/{*rest}", new[] { "DELETE", "PUT" }, () => Results.StatusCode(405));
+
 
 app.Run();
 
