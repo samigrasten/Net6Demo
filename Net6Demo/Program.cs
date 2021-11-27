@@ -1,7 +1,19 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -13,7 +25,8 @@ app.UseEndpoints(endpoints =>
     endpoints.MapRazorPages();
 });
 
-app.MapGet("/", (LinkGenerator linker) => $"Fetch all items from {linker.GetPathByName("items", values: null)}");
+app.MapGet("/", (LinkGenerator linker) => $"Fetch all items from {linker.GetPathByName("Get all items", values: null)}")
+    .ExcludeFromDescription(); 
 
 var items = new List<ToDoItem>
 {
@@ -27,7 +40,10 @@ var items = new List<ToDoItem>
 };
 
 app.MapGet("/items", async () => items)
-    .WithName("items");
+    .Produces<List<ToDoItem>>(StatusCodes.Status200OK)
+    .WithName("Get all items")
+    .WithGroupName("v1")
+    .WithTags("Queries");
 
 app.MapPost("/items/", async ([FromBody] ToDoItem item, HttpResponse response) =>
 {
@@ -35,16 +51,26 @@ app.MapPost("/items/", async ([FromBody] ToDoItem item, HttpResponse response) =
     
     response.StatusCode = 201;
     response.Headers.Location = $"/todoItems/{item.Id}";
-});
+})
+    .Accepts<ToDoItem>("application/json")
+    .Produces<ToDoItem>(StatusCodes.Status201Created)
+    .WithName("Save item to todolist")
+    .WithGroupName("v1")
+    .WithTags("Commands");
 
 app.MapGet("/items/{id}", async (int id) =>
 {
     return items.FirstOrDefault(item => item.Id == id) is ToDoItem item
         ? Results.Ok(item)
         : Results.NotFound();
-});
+})
+    .Produces<List<ToDoItem>>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status404NotFound)
+    .WithName("Get item by id")
+    .WithGroupName("v1")
+    .WithTags("Queries");
 
-app.MapGet("/items/search/{filter}", async (SearchFilter filter) =>
+app.MapGet("/items/search/{filter}", async ([FromBody]SearchFilter filter) =>
 {
     if (filter == null) return Results.BadRequest();
 
@@ -56,10 +82,15 @@ app.MapGet("/items/search/{filter}", async (SearchFilter filter) =>
             || item.Description.Contains(filter.Title, StringComparison.OrdinalIgnoreCase))) is ToDoItem item
         ? Results.Ok(item)
         : Results.NotFound();
-});
+})
+    .Produces<List<ToDoItem>>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status404NotFound)
+    .WithName("Get item by search criteria")
+    .WithGroupName("v1")
+    .WithTags("Queries");
 
-app.MapMethods("/items/{*rest}", new[] { "DELETE", "PUT" }, () => Results.StatusCode(405));
-
+app.MapMethods("/items/{*rest}", new[] { "DELETE", "PUT" }, () => Results.StatusCode(405))
+    .ExcludeFromDescription(); 
 
 app.Run();
 
