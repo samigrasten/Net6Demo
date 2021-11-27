@@ -25,6 +25,13 @@ namespace Net6Demo.Models
             optionsBuilder.UseSqlServer(_connectionstring);
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder
+                .Entity<ToDoItem>()
+                .ToTable("ToDoItem", b => b.IsTemporal());
+        }
+
         public DbSet<ToDoItem> ToDoItems { get; set; }
     }
 }
