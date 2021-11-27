@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using System.Collections.Generic;
+using System;
+using System.IO;
 
 namespace Net6Demo.Models
 {
@@ -16,9 +18,9 @@ namespace Net6Demo.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_options.GetValue<string>("ToDoConnectionstring"));            
+            optionsBuilder.UseSqlServer(_options.GetValue<string>("ToDoConnectionstring"));
         }
 
-        public ISet<ToDoItem> ToDoItems { get; set; }
+        public DbSet<ToDoItem> ToDoItems { get; set; }
     }
 }

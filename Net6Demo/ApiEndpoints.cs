@@ -1,31 +1,25 @@
-﻿namespace Net6Demo;
+﻿using Microsoft.EntityFrameworkCore;
+
+
+namespace Net6Demo;
 
 public static class ApiEndpoints
 {
-    private static readonly List<ToDoItem> _items = new List<ToDoItem> {
-            new ToDoItem()
-            {
-                Id = 1,
-                Date = DateTime.Now,
-                Title = "Net Conf Kuopio",
-                Description = "Net Conf community event in Kuopio"
-            }
-        };
-
     public static IEndpointRouteBuilder MapToDoEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/", (LinkGenerator linker) => $"Fetch all items from {linker.GetPathByName("Get all items", values: null)}")
-            .ExcludeFromDescription();
+            .ExcludeFromDescription();        
 
-        app.MapGet("/items", async () => _items)
+        app.MapGet("/items", async ([FromServices] ToDoDb db) => await db.ToDoItems.ToListAsync())
             .Produces<List<ToDoItem>>(StatusCodes.Status200OK)
             .WithName("Get all items")
             .WithGroupName("v1")
             .WithTags("Queries");
 
-        app.MapPost("/items/", async ([FromBody] ToDoItem item, HttpResponse response) =>
+        app.MapPost("/items/", async ([FromBody] ToDoItem item, [FromServices] ToDoDb db, HttpResponse response) =>
         {
-            _items.Add(item);
+            db.ToDoItems.Add(item);
+            await db.SaveChangesAsync();
 
             response.StatusCode = 201;
             response.Headers.Location = $"/todoItems/{item.Id}";
@@ -36,9 +30,9 @@ public static class ApiEndpoints
             .WithGroupName("v1")
             .WithTags("Commands");
 
-        app.MapGet("/items/{id}", async (int id) =>
-        {
-            return _items.FirstOrDefault(item => item.Id == id) is ToDoItem item
+        app.MapGet("/items/{id}", async (int id, [FromServices] ToDoDb db) =>
+        {            
+            return await db.ToDoItems.FirstOrDefaultAsync(item => item.Id == id) is ToDoItem item
                 ? Results.Ok(item)
                 : Results.NotFound();
         })
@@ -48,11 +42,11 @@ public static class ApiEndpoints
             .WithGroupName("v1")
             .WithTags("Queries");
 
-        app.MapGet("/items/search/{filter}", async ([FromBody] SearchFilter filter) =>
+        app.MapGet("/items/search/{filter}", async ([FromBody] SearchFilter filter, [FromServices] ToDoDb db) =>
         {
             if (filter == null) return Results.BadRequest();
 
-            return _items.FirstOrDefault(item =>
+            return await db.ToDoItems.FirstOrDefaultAsync(item =>
                 item.Date.Day == filter.Date.Day
                 && item.Date.Month == filter.Date.Month
                 && item.Date.Year == filter.Date.Year

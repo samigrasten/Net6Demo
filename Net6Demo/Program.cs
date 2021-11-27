@@ -13,8 +13,7 @@ if (!string.IsNullOrEmpty(builder.Configuration["VaultUri"]))
 {
     builder.Configuration.AddAzureKeyVault(
         new Uri(builder.Configuration["VaultUri"]),
-        new DefaultAzureCredential());
-    var asd = builder.Configuration.GetValue<string>("ToDoConnectionstring");
+        new DefaultAzureCredential());    
     builder.Services.AddDbContext<ToDoDb>();
 }
 
