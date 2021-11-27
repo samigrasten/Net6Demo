@@ -54,6 +54,20 @@ app.MapGet("/items/{id}", async (int id) =>
         : Results.NotFound();
 });
 
+app.MapGet("/items/search/{filter}", async (SearchFilter filter) =>
+{
+    if (filter == null) return Results.BadRequest();
+
+    return items.FirstOrDefault(item =>
+        item.Date.Day == filter.Date.Day
+        && item.Date.Month == filter.Date.Month
+        && item.Date.Year == filter.Date.Year
+        && (item.Title.Contains(filter.Title, StringComparison.OrdinalIgnoreCase) 
+            || item.Description.Contains(filter.Title, StringComparison.OrdinalIgnoreCase))) is ToDoItem item
+        ? Results.Ok(item)
+        : Results.NotFound();
+});
+
 app.Run();
 
 
