@@ -68,6 +68,8 @@ app.MapGet("/items/search/{filter}", async (SearchFilter filter) =>
         : Results.NotFound();
 });
 
+app.MapMethods("/items/{*rest}", new[] { "DELETE", "PUT" }, () => Results.StatusCode(405));
+
 app.Run();
 
 
