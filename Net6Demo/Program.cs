@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Net6Demo;
 
@@ -7,12 +9,25 @@ builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+if (!string.IsNullOrEmpty(builder.Configuration["VaultUri"]))
+{
+    builder.Configuration.AddAzureKeyVault(
+        new Uri(builder.Configuration["VaultUri"]),
+        new DefaultAzureCredential());
+    var asd = builder.Configuration.GetValue<string>("ToDoConnectionstring");
+    builder.Services.AddDbContext<ToDoDb>();
+}
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ToDoDb>();
+    db.Database.EnsureCreated();
 }
 
 app.UseHttpsRedirection();
