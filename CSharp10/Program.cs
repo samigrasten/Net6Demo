@@ -15,6 +15,11 @@
 
 //ZipDemo.Start();
 
-CallerArgumentExpressionsDemo.Start();
+//CallerArgumentExpressionsDemo.Start();
+
+//await PeriodicTimerDemo.Start();
+
+//await new Tasks().WaitAsyncDemo();
+await new Tasks().ParallelForEach();
 
 Console.ReadLine();
