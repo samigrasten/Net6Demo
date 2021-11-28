@@ -64,6 +64,9 @@ public static class ApiEndpoints
         app.MapMethods("/items/{*rest}", new[] { "DELETE", "PUT" }, () => Results.StatusCode(405))
             .ExcludeFromDescription();
 
+        app.MapGet("/breakpoint", () => BreakpointDemo.Start())
+            .ExcludeFromDescription();
+
         return app;
     }
 }
